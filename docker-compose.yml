@@ -1,0 +1,10 @@
+services:
+  libretts:
+    build: .
+    container_name: libretts
+    ports:
+      - "3000:3000"
+    environment:
+      # 设置访问密码；留空则不启用验证
+      - PASSWORD=${PASSWORD:-}
+    restart: unless-stopped

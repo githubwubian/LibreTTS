@@ -110,6 +110,83 @@ LibreTTS 支持添加自定义 API 端点，目前支持两种格式：
 
 4. 部署完成后，你会获得一个 `xxx.pages.dev` 的域名
 
+### 服务器部署（Docker）
+
+适合部署在自己的 VPS / 家用服务器上。项目服务端零依赖，镜像体积很小。
+
+```bash
+git clone https://github.com/LibreSpark/LibreTTS.git
+cd LibreTTS
+
+# 可选：启用访问密码
+echo "PASSWORD=你的密码" > .env
+
+docker compose up -d
+```
+
+服务将运行在 `http://服务器IP:3000`，可用 `-p` 修改映射端口（在 `docker-compose.yml` 中）。
+
+不想用 Docker Compose 也可以直接：
+
+```bash
+docker build -t libretts .
+docker run -d -p 3000:3000 -e PASSWORD=你的密码 --restart unless-stopped --name libretts libretts
+```
+
+### 服务器部署（Node.js）
+
+要求 Node.js 20 或更高版本，无需安装任何 npm 依赖：
+
+```bash
+git clone https://github.com/LibreSpark/LibreTTS.git
+cd LibreTTS
+
+# 可选：启用访问密码
+export PASSWORD=你的密码
+
+node server/server.js          # 或 npm start
+```
+
+可用环境变量：`PORT`（默认 3000）、`HOST`（默认 0.0.0.0）、`PASSWORD`（可选）。
+
+如需开机自启，可配置 systemd 服务（`/etc/systemd/system/libretts.service`）：
+
+```ini
+[Unit]
+Description=LibreTTS
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/LibreTTS
+Environment=PASSWORD=你的密码
+ExecStart=/usr/bin/node server/server.js
+Restart=unless-stopped
+
+[Install]
+WantedBy=multi-user.target
+```
+
+然后执行 `systemctl enable --now libretts`。
+
+### 反向代理（可选）
+
+自托管时建议用 Nginx 反向代理并配置 HTTPS：
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name tts.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+> 注意：TTS 接口会返回音频流，若 Nginx 开启了缓冲导致长文本合成变慢或中断，可在 `location` 中加入 `proxy_buffering off;`。
+
 ## 环境变量
 
 除了原有配置外，现在项目支持设置环境变量 PASSWORD 来开启访问密码验证。如果 PASSWORD 非空，则用户第一次访问页面时会显示密码输入界面，输入正确后在该设备上后续访问将不再需要验证。

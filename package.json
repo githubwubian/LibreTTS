@@ -1,0 +1,13 @@
+{
+  "name": "libretts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LibreTTS - 免费在线文本转语音工具",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
